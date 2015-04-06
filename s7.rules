@@ -1,0 +1,14 @@
+# Version 1.0 06 April 2015 
+#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
+#
+#
+####################################################################
+#	Variables to set in snort.conf
+#	$S7_CLIENT = TIA/Step7/WinCC
+#   $S7_SERVER = S7 PLC
+#
+#-----------------------------
+# Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102
+alert tcp any any -> any 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt";sid:1111301;priority:3;)
+# Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102 from Non Authorized Hosts 
+alert tcp !$S7_CLIENT any -> $S7_SERVER 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt From Non Authorized Host";sid:1111302;priority:1;)

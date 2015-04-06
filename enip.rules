@@ -1,0 +1,12 @@
+# Version 1.0 06 April 2015 
+#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
+#
+#
+####################################################################
+#	Variables to set in snort.conf
+#
+#-----------------------------
+# Alert on a Request Identity command that was sent via Redpoint Nmap NSE
+alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;)
+# Alert on a Request Identity command that was sent via Redpoint Nmap NSE
+alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111518;priority:3;)

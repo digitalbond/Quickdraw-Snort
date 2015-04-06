@@ -1,0 +1,20 @@
+# Version 1.0 06 April 2015 
+#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
+#
+#
+####################################################################
+#	Variables to set in snort.conf
+#	$FINS_SERVER = Omron PLC
+#	$FINS_CLIENT = Engineering Workstation/HMI
+#
+#-----------------------------
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/9600
+alert tcp any any -> any 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111201;priority:3;)
+# Alert on a command that was is via Redpoint Nmap NSE on UDP/9600
+alert udp any any -> any 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111202;priority:3;)
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/9600 from Non Authorized Host
+alert tcp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111203;priority:1;)
+# Alert on a command that was is via Redpoint Nmap NSE on UDP/9600 from Non Authorized Host
+alert udp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111204;priority:1;)
+
+
