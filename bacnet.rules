@@ -1,6 +1,9 @@
-# Version 1.0 06 March 2015
+# Version 1.0 06 March 2015 
+#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
 #
-#	Version 1.0	Initial Release
+#
+####################################################################
+#	Variables to set in snort.conf
 #	BACNET_CLIENT	IP addresses of valid BACnet clients
 #	BACKNET_DEVICES IP addresses of valid BACnet Devices
 #
