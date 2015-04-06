@@ -18,9 +18,10 @@ alert udp any 47808 -> any any (content: "|00 30|"; offset: 4; depth: 2; msg: "B
 alert udp any any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111704;;priority:3;)
 alert udp !$BACNET_CLIENT any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt From Non Authorized Host";sid:1111705;priority:1;)
 # Alert on the attempt of a Read-Foreign-Device-Table 
-alert udp any any -> any 47808 (content: "|06|"; offset: 1; depth: 1; msg: "Read-Foreign-Device-Table Attempt";sid:1111706;priority:3;)
+alert udp any any -> any 47808 (content: "|06|"; offset: 1; depth: 1; msg: "BACnet Read-Foreign-Device-Table Attempt";sid:1111706;priority:3;)
 # If foreign device read is replied with a NAK then this will trigger an alert 
-alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "Read-Foreign-Device-Table NAK, Device was denied access to reading the FDT";sid:1111707;priority:3;)
+alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "BACnet Read-Foreign-Device-Table NAK, Device was denied access to reading the FDT";sid:1111707;priority:3;)
 # Alert if there is a Read-Broadcast-Distribution-Table Attempt (BDT)
-alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "Read-Broadcast-Distribution-Table Attempt";sid:1111708;priority:3;)
-# Alter if there is a Read-Brodcast-Distribution-Table NAK
+alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "BACnet Read-Broadcast-Distribution-Table Attempt";sid:1111708;priority:3;)
+# Alter if there is a Read-Broadcast-Distribution-Table NAK
+alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "BACnet Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111709;priority:3;) 
