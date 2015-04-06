@@ -1,0 +1,86 @@
+# Version 1.3 04/06/2015
+#
+#	Version 1.0	10/15/2004	Initial Release
+#	Version 1.1	06/02/2010	Added preprocessor rules
+#					Added SCADA_IDS to the message for SEM's and analysis
+#					Modified source IP to any in sid:1111201, 1111202, 1111209, 1111210
+#					Modified destination IP to any in sid:1111213 and 1111214
+#	Version 1.2	01.19/2011	Tested with Snort 2.8.5.2
+#					Reference changed to a URL
+#	Version 1.3 04/06/2015 Removed preprocessor rules that were not working by commenting them out. - SJH
+#
+#	NOTE: Use either the DNP3 NO PREPROCESSOR RULES set or the DNP3 PREPROCESSOR RULES but
+#	not both. There are redundencies in these two sets of rules.
+#	
+#	Variables that need to be defined in the .conf file	
+#
+#		DNP3_CLIENT	Valid DNP3 client IP addresses
+#		DNP3_SERVER	Valid DNP3 server IP addresses
+#		DNP3_PORTS	The DNP3 TCP port or ports, typically 20000
+#
+#----------------------------
+# DNP3 NO PREPROCESSOR RULES
+#----------------------------
+#
+#
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|15|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Disable Unsolicited Responses"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111201; rev:2; priority:2;)
+alert tcp any any <> $DNP3_SERVER $DNP3_PORTS (flow:established; pcre:"/(?!\x05\x64)/iAR"; msg:"SCADA_IDS: DNP3 - Non-DNP3 Communication on a DNP3 Port"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:non-standard-protocol; sid:1111202; rev:2; priority:2;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> $DNP3_CLIENT any (flow:established; content:"|82|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unsolicited Response Storm"; threshold: type threshold, track by_src, count 5, seconds 10; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111203; rev:1; priority:2;) 
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0D|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Cold Restart From Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111204; rev:1; priority:2;) 
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0D|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Cold Restart From Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:1111205; rev:1; priority:1;) 
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|01|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unauthorized Read Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111206; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x02|\x04|\x05|\x06|\x09|\x0A|\x0F|\x12)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Write Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111207; rev:1; priority:1;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x03|\x07|\x08|\x0B|\x0C|\x10|\x11|\x13|\x14|\x15|\x16|\x17|\x18|\x19|\x1A|\x1B|\x1C|\x1D|\x1E)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Miscellaneous Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111208; rev:1; priority:1;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|12|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Stop Application"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:1111209; rev:2; priority:2;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0E|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Warm Restart"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111210; rev:2; priority:2;) 
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111211; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111212; rev:1; priority:1;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x02|\x04|\x06|\x0a|\x0c|\x0e)/iAR";msg:"SCADA_IDS: DNP3 - Points List Scan"; threshold: type threshold, track by_src, count 5, seconds 30; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111213; rev:2; priority:2;)	
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x01)/iAR"; msg:"SCADA_IDS: DNP3 - Function Code Scan"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111214; rev:2; priority:2;)
+#
+#
+#-----------------------------
+#
+# DNP3 Plugins
+#
+# 	DNP3 is a simple protocol, but either intentional fragmentation or long message fragmentation can circumvent the above Snort rules.
+#	A DNP3 preprocessor was written to deal with the fragmentation issues, and a set of DNP3 plugins was developed to write rules using 
+#	the decoded DNP3 in the preprocessor.
+#
+#	Keyword: dnp3_checksum:<value>#	Purpose: determines if the DNP3 checksum is correct#	Value: "correct" or "incorrect"#	Dependencies: preprocessor dnp3 must be active#	Example rule: alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Failed Checksum Error"; flags: PA; dnp3_checksum:incorrect; reference:scada,1111216.htm; classtype:bad-unknown; sid:11112161; rev:1; priority:2;)##	Keyword: dnp3_cmd_fc:<value>#	Purpose: matches on the function code field in a request packet#	Value: decimal value of the function code to match on#	Dependencies: preprocessor dnp3 must be active. Matches only if the matching response packet is also recorded by the session.#	Example rule: alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Disable Unsolicited Responses"; dnp3_cmd_fc:21; reference:scada,1111201.htm; classtype:attempted-dos; sid:11112011; rev:1; priority:2;)##	Keyword: dnp3_resp_ot:<value>#	Purpose: matches on the object type field in a response packet#	Options: decimal value of the object type to match on#	Dependencies: preprocessor dnp3 must be active#	Example rule: alert tcp any 20000 -> any any (msg:"(Event 08) Change Time"; dnp3_cmd_fc:2; dnp3_cmd_ot:50; dnp3_resp_ot:32; category:configuration; sid:123; rev:1;)# #	Keyword: dnp3_cmd_ot:<value>#	Purpose: matches on the object type field in a request packet#	Value: decimal value of the object type to match on#	Dependencies: preprocessor dnp3 must be active.#	Example rule: alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Time Change Attempt"; dnp3_cmd_fc:2; dnp3_cmd_ot:50; reference:scada,1111215.htm; classtype:misc-activity; sid:11112151; rev:1; priority:2;)##	Keyword: dnp3_resp_ii:<value>#	Purpose: matches on the internal indications field in a response packet#	Value: currently supported are "unknown_object" (0x0002) and "unknown_func" (0x0001).#	Dependencies: preprocessor dnp3 must be active.#	Example: alert tcp any 20000 -> any any (msg:"(Event 20) Function Not Available Error"; flags: PA; dnp3_resp_ii:unknown_func; category:request error; sid:1000501; rev:1;)
+#
+#
+#-----------------------------
+#
+# DNP3 PREPROCESSOR RULES
+# 
+# The rules below were created with the following approach
+#	
+#	1. Each existing, non-preprocessor rule was evaluated to determine if it could use a DNP3 plugin
+#
+#	1.a If the answer is yes, it was rewritten using the plugin and a 1 was appended to the SID. This was done
+#	    because the rule with the plugin would be more reliable because it cannot be circumvented by fragmentation.
+#
+#	1.b If the rule could not use a DNP3 plugin, the existing rule is added unchanged. This was done so the list
+#	    of rules below is complete. 
+#
+#	2. New rules written with the plugin are added after the existing rules.
+#
+# ----------------------------
+
+#alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Disable Unsolicited Responses"; dnp3_cmd_fc:21; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:11112011; rev:1; priority:2;)
+alert tcp any any <> $DNP3_SERVER $DNP3_PORTS (flow:established; pcre:"/(?!\x05\x64)/iAR"; msg:"SCADA_IDS: DNP3 - Non-DNP3 Communication on a DNP3 Port"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:non-standard-protocol; sid:1111202; rev:1; priority:2;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> $DNP3_CLIENT any (flow:established; content:"|82|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unsolicited Response Storm"; threshold: type threshold, track by_src, count 5, seconds 10; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111215; rev:1; priority:2;) 
+#alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Cold Restart From Authorized Client"; dnp3_cmd_fc:13; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:11112041; rev:1; priority:2;) 
+#alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Cold Restart From Unauthorized Client"; dnp3_cmd_fc:13; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:11112051; rev:1; priority:1;) 
+#alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Unauthorized Read Request to a PLC"; dnp3_cmd_fc:1; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:11112061; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x02|\x04|\x05|\x06|\x09|\x0A|\x0F|\x12)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Write Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111207; rev:1; priority:1;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x03|\x07|\x08|\x0B|\x0C|\x10|\x11|\x13|\x14|\x15|\x16|\x17|\x18|\x19|\x1A|\x1B|\x1C|\x1D|\x1E)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Miscellaneous Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111208; rev:1; priority:1;)
+#alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Stop Application"; dnp3_cmd_fc:18; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:11112091; rev:1; priority:2;)
+#alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Warm Restart"; dnp3_cmd_fc:14; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:11112101; rev:1; priority:2;) 
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111211; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111212; rev:1; priority:1;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x02|\x04|\x06|\x0a|\x0c|\x0e)/iAR";msg:"SCADA_IDS: DNP3 - Points List Scan"; threshold: type threshold, track by_src, count 5, seconds 30; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111213; rev:1; priority:2;)	
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x01)/iAR"; msg:"SCADA_IDS: DNP3 - Function Code Scan"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111214; rev:1; priority:2;)
+#alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Time Change Attempt"; dnp3_cmd_fc:2; dnp3_cmd_ot:50; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-activity; sid:11112151; rev:1; priority:2;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Failed Checksum Error"; flags: PA; dnp3_checksum:incorrect; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:11112161; rev:1; priority:2;)
