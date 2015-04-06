@@ -5,7 +5,7 @@
 ####################################################################
 #	Variables to set in snort.conf
 #	BACNET_CLIENT	IP addresses of valid BACnet clients
-#	BACKNET_DEVICES IP addresses of valid BACnet Devices
+#	BACNET_DEVICES IP addresses of valid BACnet Devices
 #
 #-----------------------------
 # Alert on a Foreign Device Join attempt
