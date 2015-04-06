@@ -27,6 +27,7 @@ alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "
 # Alert if there is a Read-Broadcast-Distribution-Table Attempt (BDT)
 alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "Read-Broadcast-Distribution-Table Attempt";sid:1111708;priority:3;)
 # Alter if there is a Read-Brodcast-Distribution-Table NAK
+alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "BACnet Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111709;priority:3;)
 ############################################################
 # DNP3
 ############################################################
