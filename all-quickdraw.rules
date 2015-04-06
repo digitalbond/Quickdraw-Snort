@@ -1,0 +1,114 @@
+# Version 1.0 06 March 2015 
+#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
+#
+#
+####################################################################
+#
+#	A collection of all the .rules found on the quickdraw GitHub page
+#	https://github.com/digitalbond/quickdraw
+#
+#
+#############################################################
+# BACnet
+############################################################
+# Alert on a Foreign Device Join attempt
+alert udp any any -> any 47808 (content: "|05|"; offset: 1; depth: 1; msg: "BACnet Foreign Device Join Attempt";sid:1111701;priority:3;)
+# Alert on Foreign Device Join attempt by non authorized host
+alert udp !$BACNET_CLIENT any -> any 47808 (content: "|05|"; offset:1; depth:1; msg:"BACnet forigen Device Join Attempt From Non Authorized Host"; sid:1111701;priotity:1;)
+# Alert on a Non Acknowledgement (NAK) of a foreign Device join, this is a device denying access to join to the FDT
+alert udp any 47808 -> any any (content: "|00 30|"; offset: 4; depth: 2; msg: "Register-Foreign-Device NAK";sid:1111703;;priority:3;)
+# Alert on a BACnet Read Property Attempt, this rule can be altered to allow specific hosts that are allowed to read properties
+alert udp any any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111704;;priority:3;)
+alert udp !$BACNET_CLIENT any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111704;priority:1;)
+# Alert on the attempt of a Read-Foreign-Device-Table 
+alert udp any any -> any 47808 (content: "|06|"; offset: 1; depth: 1; msg: "Read-Foreign-Device-Table Attempt";sid:1111705;priority:3;)
+# If foreign device read is replied with a NAK then this will trigger an alert 
+alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "Read-Foreign-Device-Table NAK, Device was denied access to reading the FDT";sid:1111706;priority:3;)
+# Alert if there is a Read-Broadcast-Distribution-Table Attempt (BDT)
+alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "Read-Broadcast-Distribution-Table Attempt";sid:1111707;priority:3;)
+# Alter if there is a Read-Brodcast-Distribution-Table NAK
+############################################################
+# DNP3
+############################################################
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|15|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Disable Unsolicited Responses"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111201; rev:2; priority:2;)
+alert tcp any any <> $DNP3_SERVER $DNP3_PORTS (flow:established; pcre:"/(?!\x05\x64)/iAR"; msg:"SCADA_IDS: DNP3 - Non-DNP3 Communication on a DNP3 Port"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:non-standard-protocol; sid:1111202; rev:2; priority:2;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> $DNP3_CLIENT any (flow:established; content:"|82|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unsolicited Response Storm"; threshold: type threshold, track by_src, count 5, seconds 10; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111203; rev:1; priority:2;) 
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0D|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Cold Restart From Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111204; rev:1; priority:2;) 
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0D|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Cold Restart From Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:1111205; rev:1; priority:1;) 
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|01|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unauthorized Read Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111206; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x02|\x04|\x05|\x06|\x09|\x0A|\x0F|\x12)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Write Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111207; rev:1; priority:1;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x03|\x07|\x08|\x0B|\x0C|\x10|\x11|\x13|\x14|\x15|\x16|\x17|\x18|\x19|\x1A|\x1B|\x1C|\x1D|\x1E)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Miscellaneous Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111208; rev:1; priority:1;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|12|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Stop Application"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:denial-of-service; sid:1111209; rev:2; priority:2;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|0E|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Warm Restart"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111210; rev:2; priority:2;) 
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111211; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111212; rev:1; priority:1;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x02|\x04|\x06|\x0a|\x0c|\x0e)/iAR";msg:"SCADA_IDS: DNP3 - Points List Scan"; threshold: type threshold, track by_src, count 5, seconds 30; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111213; rev:2; priority:2;)	
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x01)/iAR"; msg:"SCADA_IDS: DNP3 - Function Code Scan"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111214; rev:2; priority:2;)
+alert tcp any any <> $DNP3_SERVER $DNP3_PORTS (flow:established; pcre:"/(?!\x05\x64)/iAR"; msg:"SCADA_IDS: DNP3 - Non-DNP3 Communication on a DNP3 Port"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:non-standard-protocol; sid:1111202; rev:1; priority:2;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> $DNP3_CLIENT any (flow:established; content:"|82|"; offset:12; depth:1; msg:"SCADA_IDS: DNP3 - Unsolicited Response Storm"; threshold: type threshold, track by_src, count 5, seconds 10; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-dos; sid:1111215; rev:1; priority:2;) 
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x02|\x04|\x05|\x06|\x09|\x0A|\x0F|\x12)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Write Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111207; rev:1; priority:1;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|05 64|"; depth:2; pcre:"/[\S\s]{10}(\x03|\x07|\x08|\x0B|\x0C|\x10|\x11|\x13|\x14|\x15|\x16|\x17|\x18|\x19|\x1A|\x1B|\x1C|\x1D|\x1E)/iAR"; msg:"SCADA_IDS: DNP3 - Unauthorized Miscellaneous Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:1111208; rev:1; priority:1;)
+alert tcp $DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Authorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111211; rev:1; priority:2;)
+alert tcp !$DNP3_CLIENT any -> $DNP3_SERVER $DNP3_PORTS (flow:from_client,established; content:"|FF FF|"; offset:4; depth:2; msg:"SCADA_IDS: DNP3 - Broadcast Request from Unauthorized Client"; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:misc-attack; sid:1111212; rev:1; priority:1;)
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x02|\x04|\x06|\x0a|\x0c|\x0e)/iAR";msg:"SCADA_IDS: DNP3 - Points List Scan"; threshold: type threshold, track by_src, count 5, seconds 30; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111213; rev:1; priority:2;)	
+alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|"; offset:12; depth:1; pcre:"/[\S\s]{1}(\x01)/iAR"; msg:"SCADA_IDS: DNP3 - Function Code Scan"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:attempted-recon; sid:1111214; rev:1; priority:2;)
+alert tcp any any -> $DNP3_SERVER $DNP3_PORTS (msg:"SCADA_IDS: DNP3 - Failed Checksum Error"; flags: PA; dnp3_checksum:incorrect; reference:url,digitalbond.com/tools/quickdraw/dnp3-rules; classtype:bad-unknown; sid:11112161; rev:1; priority:2;)
+############################################################
+# ENIP
+############################################################
+alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111708;priority:3;) 
+# Alert on a Request Identity command that was sent via Redpoint Nmap NSE
+alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;)
+# Alert on a Request Identity command that was sent via Redpoint Nmap NSE
+alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111518;priority:3;)
+############################################################
+# FOX
+############################################################
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/1911
+alert tcp any any -> any 1911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/1911)";sid:1111101;priority:3;)
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/4911
+alert tcp any any -> any 4911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/4911)";sid:1111102;priority:3;)
+############################################################
+# MODBUS
+############################################################
+alert tcp $MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; content:"|08 00 04|"; offset:7; depth:3; msg:"SCADA_IDS: Modbus TCP - Force Listen Only Mode"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-dos; sid:1111001; rev:2; priority:1;)
+alert tcp $MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; content:"|08 00 01|"; offset:7; depth:3; msg:"SCADA_IDS: Modbus TCP - Restart Communications Option"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-dos; sid:1111002; rev:2; priority:1;)
+alert tcp $MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; content:"|08 00 0A|"; offset:7; depth:3; msg:"SCADA_IDS: Modbus TCP - Clear Counters and Diagnostic Registers"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:misc-attack; sid:1111003; rev:2; priority:3;)
+alert tcp $MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; content:"|2B|"; offset:7; depth:1; msg:"SCADA_IDS: Modbus TCP - Read Device Identification"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-recon; sid:1111004; rev:2; priority:3;)
+alert tcp $MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; content:"|11|"; offset:7; depth:1; msg:"SCADA_IDS: Modbus TCP - Report Server Information"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-recon; sid:1111005; rev:2; priority:3;)
+alert tcp !$MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; pcre:"/[\S\s]{3}(\x01|\x02|\x03|\x04|\x07|\x0B|\x0C|\x11|\x14|\x17|\x18|\x2B)/iAR"; msg:"SCADA_IDS: Modbus TCP - Unauthorized Read Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:bad-unknown; sid:1111006; rev:1; priority:2;)
+alert tcp !$MODBUS_CLIENT any -> $MODBUS_SERVER 502 (flow:from_client,established; content:"|00 00|"; offset:2; depth:2; pcre:"/[\S\s]{3}(\x05|\x06|\x0F|\x10|\x15|\x16)/iAR"; msg:"SCADA_IDS: Modbus TCP - Unauthorized Write Request to a PLC"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:bad-unknown; sid:1111007; rev:1; priority:1;)
+alert tcp $MODBUS_CLIENT any <> $MODBUS_SERVER 502 (flow:established; dsize:>300; msg:"SCADA_IDS: Modbus TCP - Illegal Packet Size, Possible DOS Attack"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:non-standard-protocol; sid:1111008; rev:1; priority:1;)
+alert tcp $MODBUS_CLIENT any <> $MODBUS_SERVER 502 (flow:established; pcre:"/[\S\s]{2}(?!\x00\x00)/iAR"; msg:"SCADA_IDS: Modbus TCP - Non-Modbus Communication on TCP Port 502"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:non-standard-protocol; sid:1111009; rev:1; priority:1;)
+alert tcp $MODBUS_SERVER 502 -> $MODBUS_CLIENT any (flow:established; content:"|00 00|"; offset:2; depth:2; content:"|06|"; offset:8; depth:1; byte_test: 1, >=, 0x80, 7; msg:"SCADA_IDS: Modbus TCP - Slave Device Busy Exception Code Delay"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:successful-dos; sid:1111010; rev:2; priority:2;)
+alert tcp $MODBUS_SERVER 502 -> $MODBUS_CLIENT any (flow:established; content:"|00 00|"; offset:2; depth:2; content:"|05|"; offset:8; depth:1; byte_test: 1, >=, 0x80, 7; msg:"SCADA_IDS: Modbus TCP - Acknowledge Exception Code Delay"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:successful-dos; sid:1111011; rev:2; priority:2;)
+alert tcp $MODBUS_SERVER 502 <> $MODBUS_CLIENT any (flow:established; byte_jump:2,4; isdataat:0,relative; msg:"SCADA_IDS: Modbus TCP - Incorrect Packet Length, Possible DOS Attack"; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:non-standard-protocol; sid:1111012; rev:1; priority:2;)
+alert tcp $MODBUS_SERVER 502 -> $MODBUS_CLIENT any (flow:established; content:"|00 00|"; offset:2; depth:2; byte_test: 1, >=, 0x80, 7; content:"|02|"; offset:8; depth:1; msg:"SCADA_IDS: Modbus TCP - Points List Scan"; threshold: type threshold, track by_src, count 5, seconds 60; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-recon; sid:1111013; rev:2; priority:2;)
+alert tcp $MODBUS_SERVER 502 -> $MODBUS_CLIENT any (flow:established; content:"|00 00|"; offset:2; depth:2; byte_test: 1, >=, 0x80, 7; content:"|01|"; offset:8; depth:1; msg:"SCADA_IDS: Modbus TCP - Function Code Scan"; threshold: type threshold, track by_src, count 3, seconds 60; reference:url,digitalbond.com/tools/quickdraw/modbus-tcp-rules; classtype:attempted-recon; sid:1111014; rev:2; priority:2;)
+############################################################
+# MODICON
+############################################################
+# Alert on a ladder Logic download has begun
+alert tcp any any -> any 502 (flow: established,to_server; content: "|00 5a 01 34 00 01|"; msg: "Schneider Modicon Function Code 90 - Download Ladder Logic Started";sid:1111015;priority:2; threshold:type limit, track by_src, count 1 , seconds 60;)
+# Alert on Ladder Logic upload to Modicon PLC over Function Code 90
+alert udp any any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111016;priority:2;threshold:type limit, track by_src, count 1 , seconds 60;)
+# Alert on Ladder Logic Upload from NOT an authorised Client. (e.g. engineering workstation with unity pro)
+alert udp !$MODICON_CLIENT any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111017;priority:1;threshold:type limit, track by_src, count 1 , seconds 60;)
+############################################################
+# OMRON
+############################################################
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/9600
+alert tcp any any -> any 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111201;priority:3;)
+# Alert on a command that was is via Redpoint Nmap NSE on UDP/9600
+alert udp any any -> any 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111202;priority:3;)
+# Alert on a command that was is via Redpoint Nmap NSE on TCP/9600 from Non Authorized Host
+alert tcp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111203;priority:1;)
+# Alert on a command that was is via Redpoint Nmap NSE on UDP/9600 from Non Authorized Host
+alert udp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111204;priority:1;)
+############################################################
+# S7
+############################################################
+# Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102
+alert tcp any any -> any 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt";sid:1111301;priority:3;)
+# Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102 from Non Authorized Hosts 
+alert tcp !$S7_CLIENT any -> $S7_SERVER 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt From Non Authorized Host";sid:1111302;priority:1;)
