@@ -56,7 +56,6 @@ alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|";
 ############################################################
 # ENIP
 ############################################################
-alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111708;priority:3;) 
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
 alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;)
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
