@@ -11,7 +11,7 @@
 # Alert on a Foreign Device Join attempt
 alert udp any any -> any 47808 (content: "|05|"; offset: 1; depth: 1; msg: "BACnet Foreign Device Join Attempt";sid:1111701;priority:3;)
 # Alert on Foreign Device Join attempt by non authorized host
-alert udp !$BACNET_CLIENT any -> any 47808 (content: "|05|"; offset:1; depth:1; msg:"BACnet foreign Device Join Attempt From Non Authorized Host"; sid:1111702;priotity:1;)
+alert udp !$BACNET_CLIENT any -> any 47808 (content: "|05|"; offset:1; depth:1; msg:"BACnet foreign Device Join Attempt From Non Authorized Host"; sid:1111702;priority:1;)
 # Alert on a Non Acknowledgement (NAK) of a foreign Device join, this is a device denying access to join to the FDT
 alert udp any 47808 -> any any (content: "|00 30|"; offset: 4; depth: 2; msg: "BACnet Register-Foreign-Device NAK";sid:1111703;;priority:3;)
 # Alert on a BACnet Read Property Attempt, this rule can be altered to allow specific hosts that are allowed to read properties
