@@ -1,12 +1,70 @@
-# Version 1.0 06 April 2015 
-#	1.0 - Initial Release - Stephen Hilt (hilt at digitalbond dot com)
+# (C) Copyright 2011-2017, Digital Bond, Inc.
+# All rights reserved.
+#
+# Version 1.1 02/27/2011
+#
+#	Version 1.0	01/29/2011	Initial Release
+#	Version 1.1	02/27/2011	Changed reference to reflect new web site
+#	Version 1.2	09/29/2017	Updated all enip preprocessors rules
 #
 #
-####################################################################
-#	Variables to set in snort.conf
+#----------------------------------------------------------
 #
-#-----------------------------
+# All EtherNet/IP rules in this file require the enip preprocessor. See Suricata documentation for 
+# details on enabling this preprocessor in the config file.
+#
+# The EtherNet/IP preprocessor simplifies and makes possible Snort/Suricata rule writing for
+# EtherNet/IP and the underlying CIP. It would be difficult to write reliable rules without the
+# preprocessor because it is necessary to know the session state to avoid false positives and 
+# negatives. The plugins that use the preprocessor collected objects allow a Snort/Suricata rule
+# writer to easily match field values, such as the CIP service.
+#
+#	Variables that must be defined in the .conf/.yaml file
+#
+#		ENIP_CLIENT	The IP addresses of valid EtherNet/IP clients (eg. SCADA system)
+#		ENIP_SERVER	The IP addresses of valid EtherNet/IP servers (PLC's)
+#
+#----------------------------------------------------------
+#  EtherNet IP Preprocessor in Suricata Supports 2 keywords:
+#----------------------------------------------------------
+#
+#  Keyword: cip_service:<value(s)>
+#  Purpose: matches on the CIP service field of a packet
+#  Value: decimal value of the CIP service to match on
+#  Dependencies: preprocessor enip must be active; matches only if the matching reply packet is also recorded by the session
+#
+#  Keyword: enip_command:<value>
+#  Purpose: matches on the CIP response field of a packet
+#  Value: decimal value of the CIP response
+#  Dependencies: preprocessor enip must be active
+#
+#----------------------------------------------------------
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Reboot or Restart from Unauthorized Client"; cip_service:5; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111501; rev:1; priority:1;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Reboot or Restart from Unauthorized Client"; cip_service:6; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111502; rev:1; priority:1;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Reboot or Restart from Authorized Client"; cip_service:5; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111503; rev:1; priority:2;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Reboot or Restart from Authorized Client"; cip_service:6; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111504; rev:1; priority:2;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Unlock PLC Attempt from Unauthorized Client"; cip_service:76; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111505; rev:1; priority:1;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Unlock PLC Attempt from Authorized Client"; cip_service:76; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111506; rev:1; priority:2;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Lock PLC Attempt from Unauthorized Client"; cip_service:77; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111507; rev:1; priority:1;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Lock PLC Attempt from Unauthorized Client"; cip_service:78; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111508; rev:1; priority:1;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Lock PLC Attempt from Authorized Client"; cip_service:77; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111509; rev:1; priority:2;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Lock PLC Attempt from Authorized Client"; cip_service:78; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111510; rev:1; priority:2;)
+#
+# #Alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Unauthorized Client"; flow:to_server,established; flowbits:isset,ktime; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; flowbits:set,detstop; sid:1111511; rev:1; priority:2;)
+# #Alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Authorized Client"; flow:to_server,established; flowbits:isset,ktime; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; flowbits:set,detstop; sid:1111512; rev:1; priority:2;)
+#
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Unauthorized Client"; flow:to_server,established; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; flowbits:set,detstop; sid:1111511; rev:1; priority:2;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Authorized Client"; flow:to_server,established; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; flowbits:set,detstop; sid:1111512; rev:1; priority:2;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Unauthorized Client"; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111519; rev:1; priority:2;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Stop Detected from Authorized Client"; cip_service:7; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:denial-of-service; sid:1111520; rev:1; priority:2;)
+#
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Remote Mode Change Attempt from Unauthorized Client"; flow:to_server,established; flowbits:isset,detstop; cip_service:76; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111513; rev:1; priority:1;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Remote Mode Change Attempt from Authorized Client"; flow:to_server,established; flowbits:isset,detstop; cip_service:76; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111514; rev:1; priority:2;)
+alert enip !$ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Software Upload from Unauthorized Client"; cip_service:79; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111515; rev:1;)
+alert enip $ENIP_CLIENT any -> $ENIP_SERVER 44818 (msg:"SCADA_IDS: ENIP/CIP - Software Upload from Authorized Client"; cip_service:79; reference:url,digitalbond.com/tools/quickdraw/ethernetip-rules; classtype:misc-attack; sid:1111516; rev:1;)
+#
+#
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
-alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;)
+alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE"; sid:1111517; priority:3;)
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
-alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111518;priority:3;)
+alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE"; sid:1111518; priority:3;)
