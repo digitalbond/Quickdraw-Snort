@@ -12,22 +12,22 @@
 # BACnet
 ############################################################
 # Alert on a Foreign Device Join attempt
-alert udp any any -> any 47808 (content: "|05|"; offset: 1; depth: 1; msg: "BACnet Foreign Device Join Attempt";sid:1111701;priority:3;)
+alert udp any any -> any 47808 (content: "|05|"; offset: 1; depth: 1; msg: "BACnet Foreign Device Join Attempt";sid:1111701;priority:3;rev:1;)
 # Alert on Foreign Device Join attempt by non authorized host
-alert udp !$BACNET_CLIENT any -> any 47808 (content: "|05|"; offset:1; depth:1; msg:"BACnet forigen Device Join Attempt From Non Authorized Host"; sid:1111702;priority:1;)
+alert udp !$BACNET_CLIENT any -> any 47808 (content: "|05|"; offset:1; depth:1; msg:"BACnet foreign Device Join Attempt From Non Authorized Host"; sid:1111702;priority:1;rev:1;)
 # Alert on a Non Acknowledgement (NAK) of a foreign Device join, this is a device denying access to join to the FDT
-alert udp any 47808 -> any any (content: "|00 30|"; offset: 4; depth: 2; msg: "Register-Foreign-Device NAK";sid:1111703;;priority:3;)
+alert udp any 47808 -> any any (content: "|00 30|"; offset: 4; depth: 2; msg: "BACnet Register-Foreign-Device NAK";sid:1111703;;priority:3;rev:1;)
 # Alert on a BACnet Read Property Attempt, this rule can be altered to allow specific hosts that are allowed to read properties
-alert udp any any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111704;;priority:3;)
-alert udp !$BACNET_CLIENT any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111705;priority:1;)
+alert udp any any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt";sid:1111704;;priority:3;rev:1;)
+alert udp !$BACNET_CLIENT any -> any 47808 (content: "|0c|"; offset: 10; depth: 1; msg: "BACnet Read Property Attempt From Non Authorized Host";sid:1111705;priority:1;rev:1;)
 # Alert on the attempt of a Read-Foreign-Device-Table 
-alert udp any any -> any 47808 (content: "|06|"; offset: 1; depth: 1; msg: "Read-Foreign-Device-Table Attempt";sid:1111706;priority:3;)
+alert udp any any -> any 47808 (content: "|06|"; offset: 1; depth: 1; msg: "BACnet Read-Foreign-Device-Table Attempt";sid:1111706;priority:3;rev:1;)
 # If foreign device read is replied with a NAK then this will trigger an alert 
-alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "Read-Foreign-Device-Table NAK, Device was denied access to reading the FDT";sid:1111707;priority:3;)
+alert udp any 47808 -> any any  (content: "|00 40|"; offset: 4; depth: 2; msg: "BACnet Read-Foreign-Device-Table NAK, Device was denied access to reading the FDT";sid:1111707;priority:3;rev:1;)
 # Alert if there is a Read-Broadcast-Distribution-Table Attempt (BDT)
-alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "Read-Broadcast-Distribution-Table Attempt";sid:1111708;priority:3;)
-# Alter if there is a Read-Brodcast-Distribution-Table NAK
-alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "BACnet Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111709;priority:3;)
+alert udp any any -> any 47808 (content: "|02|"; offset: 1; depth: 1; msg: "BACnet Read-Broadcast-Distribution-Table Attempt";sid:1111708;priority:3;rev:1;)
+# Alter if there is a Read-Broadcast-Distribution-Table NAK
+alert udp any 47808 -> any any  (content: "|00 20|"; offset: 4; depth: 2; msg: "BACnet Read-Broadcast-Distribution-Table NAK, Device was denied access to reading the BDT";sid:1111709;priority:3;rev:1;) 
 ############################################################
 # DNP3
 ############################################################
@@ -57,16 +57,16 @@ alert tcp $DNP3_SERVER $DNP3_PORTS -> any any (flow:established; content:"|81|";
 # ENIP
 ############################################################
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
-alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;)
+alert tcp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "TCP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111517;priority:3;rev:1;)
 # Alert on a Request Identity command that was sent via Redpoint Nmap NSE
-alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111518;priority:3;)
+alert udp any any -> any 44818 (content: "|63|"; offset: 0; depth: 1; content: "|C1 DE BE D1|"; offset: 16; depth: 4; msg: "UDP EtherNet/IP Request Identity Attempt Via Redpoint Nmap NSE";sid:1111518;priority:3;rev:1;)
 ############################################################
 # FOX
 ############################################################
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/1911
-alert tcp any any -> any 1911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/1911)";sid:1111101;priority:3;)
+alert tcp any any -> any 1911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/1911)";sid:1111101;priority:3;rev:1;)
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/4911
-alert tcp any any -> any 4911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/4911)";sid:1111102;priority:3;)
+alert tcp any any -> any 4911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/4911)";sid:1111102;priority:3;rev:1;)
 ############################################################
 # MODBUS
 ############################################################
@@ -88,26 +88,26 @@ alert tcp $MODBUS_SERVER 502 -> $MODBUS_CLIENT any (flow:established; content:"|
 # MODICON
 ############################################################
 # Alert on a ladder Logic download has begun
-alert tcp any any -> any 502 (flow: established,to_server; content: "|00 5a 01 34 00 01|"; msg: "Schneider Modicon Function Code 90 - Download Ladder Logic Started";sid:1111015;priority:2; threshold:type limit, track by_src, count 1 , seconds 60;)
+alert tcp any any -> any 502 (flow: established,to_server; content: "|00 5a 01 34 00 01|"; msg: "Schneider Modicon Function Code 90 - Download Ladder Logic Started";sid:1111015;priority:2; threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)
 # Alert on Ladder Logic upload to Modicon PLC over Function Code 90
-alert udp any any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111016;priority:2;threshold:type limit, track by_src, count 1 , seconds 60;)
+alert udp any any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111016;priority:2;threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)
 # Alert on Ladder Logic Upload from NOT an authorised Client. (e.g. engineering workstation with unity pro)
-alert udp !$MODICON_CLIENT any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111017;priority:1;threshold:type limit, track by_src, count 1 , seconds 60;)
+alert udp !$MODICON_CLIENT any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111017;priority:1;threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)
 ############################################################
 # OMRON
 ############################################################
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/9600
-alert tcp any any -> any 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111401;priority:3;)
+alert tcp any any -> any 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111401;priority:3;rev:1;)
 # Alert on a command that was is via Redpoint Nmap NSE on UDP/9600
-alert udp any any -> any 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111402;priority:3;)
+alert udp any any -> any 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111402;priority:3;rev:1;)
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/9600 from Non Authorized Host
-alert tcp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111403;priority:1;)
+alert tcp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|46 49 4e 53|"; offset: 0; depth: 4; content: "|05 01|"; offset: 26; depth: 2; msg: "OMRON FINS TCP Read Controller Attempt";sid:1111403;priority:1;rev:1;)
 # Alert on a command that was is via Redpoint Nmap NSE on UDP/9600 from Non Authorized Host
-alert udp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111404;priority:1;)
+alert udp !$FINS_CLIENT any -> $FINS_SERVER 9600 (content: "|80|"; offset: 0; depth: 1; content: "|05 01|"; offset: 10; depth: 2; msg: "OMRON FINS UDP Read Controller Attempt";sid:1111404;priority:1;rev:1;)
 ############################################################
 # S7
 ############################################################
 # Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102
-alert tcp any any -> any 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt";sid:1111301;priority:3;)
+alert tcp any any -> any 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt";sid:1111301;priority:3;rev:1;)
 # Alert on a command that was is via s7-enumerate Redpoint Nmap NSE on TCP/102 from Non Authorized Hosts 
-alert tcp !$S7_CLIENT any -> $S7_SERVER 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt From Non Authorized Host";sid:1111302;priority:1;)
+alert tcp !$S7_CLIENT any -> $S7_SERVER 102 (content: "|32 07 00 00 00 00 00 08 00 08|"; offset: 0; depth: 10; content: "|00 01 12 04 11 44 01 00|"; offset: 11; depth: 8; msg: "S7 Enumerate Redpoint NSE Request CPU Function Read SZL attempt From Non Authorized Host";sid:1111302;priority:1;rev:1;)

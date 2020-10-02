@@ -8,8 +8,8 @@
 #
 #-----------------------------
 # Alert on a ladder Logic download has begun
-alert tcp any any -> any 502 (flow: established,to_server; content: "|00 5a 01 34 00 01|"; msg: "Schneider Modicon Function Code 90 - Download Ladder Logic Started";sid:1111015;priority:2; threshold:type limit, track by_src, count 1 , seconds 60;)
+alert tcp any any -> any 502 (flow: established,to_server; content: "|00 5a 01 34 00 01|"; msg: "Schneider Modicon Function Code 90 - Download Ladder Logic Started";sid:1111015;priority:2; threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)
 # Alert on Ladder Logic upload to Modicon PLC over Function Code 90
-alert udp any any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111016;priority:2;threshold:type limit, track by_src, count 1 , seconds 60;)
+alert udp any any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111016;priority:2;threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)
 # Alert on Ladder Logic Upload from NOT an authorised Client. (e.g. engineering workstation with unity pro)
-alert udp !$MODICON_CLIENT any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111017;priority:1;threshold:type limit, track by_src, count 1 , seconds 60;)
+alert udp !$MODICON_CLIENT any -> any 502 (flow: established,to_server; content: "|00 5a 00 58 02 01 00 00 00 00 00 fb 00|"; msg: "Schneider Modicon Function Code 90 - Upload Ladder Logic Started";sid:1111017;priority:1;threshold:type limit, track by_src, count 1 , seconds 60;rev:1;)

@@ -7,6 +7,6 @@
 #
 #-----------------------------
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/1911
-alert tcp any any -> any 1911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/1911)";sid:1111101;priority:3;)
+alert tcp any any -> any 1911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/1911)";sid:1111101;priority:3;rev:1;)
 # Alert on a command that was is via Redpoint Nmap NSE on TCP/4911
-alert tcp any any -> any 4911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/4911)";sid:1111102;priority:3;)
+alert tcp any any -> any 4911 (content: "|66 6f 78|"; offset: 0; depth: 3; content: "|78 70 76 6d 2d 30 6f 6d 64 63 30 31 78 6d 79|"; offset: 59; depth: 15; msg: "Discovery Attempt Via Redpoint Nmap NSE Script (Niagara Fox TCP/4911)";sid:1111102;priority:3;rev:1;)
